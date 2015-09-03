@@ -1,4 +1,6 @@
 #include <Python.h>
+#include <numpy/arrayobject.h>
+#include <stdio.h>
 #include <stdlib.h>
 //#include <stdio.h> // for test output
 #include <string.h>
@@ -248,19 +250,114 @@ static PyObject *getIntervals(PyObject *self,PyObject *args)
     return intervals;
 }
 
+// Get signal from BigWig file and store in numpy array.
+static PyObject *getIntervalData(PyObject *self, PyObject *args)
+{
+    //Parse the args
+    char *clChrom;
+    int clStart,clEnd;
+    char *inFile;
+    PyArrayObject *outarray;
+
+    if(!PyArg_ParseTuple(args,"ssiiO!",&inFile,&clChrom,&clStart,&clEnd,&PyArray_Type,&outarray))
+    {
+        return Py_BuildValue("i",1);
+    }
+
+    int num_dims = PyArray_NDIM(outarray);
+    if (num_dims != 1)
+    {
+        PyErr_SetString(PyExc_ValueError, "outarray should be a 1D array");
+        return NULL;
+    }
+
+    int array_len = PyArray_SHAPE(outarray)[0];
+    if (array_len != clEnd - clStart) {
+        PyErr_SetString(PyExc_ValueError, "outarray should be at least as large as chromosome interval");
+        return NULL;
+    }
+
+    struct bbiFile *bwf=NULL;
+    struct bbiChromInfo *chrom=NULL;
+    struct BigWigFile *p=NULL;
+
+    // Find inFile
+    for(p=BigWigList;p!=NULL;p=p->next)
+    {
+        if(sameString(inFile,p->inFile))
+        {
+            bwf=p->bwf;
+            chrom=p->chromList;
+            break;
+        }
+    }
+
+    // if not found, return "2"
+    if (bwf==NULL) return Py_BuildValue("i",2);
+
+    PyArray_Descr *descr = PyArray_DescrFromType(NPY_DOUBLE);
+
+    if (!PyArray_ISCARRAY(outarray))
+    {
+        PyErr_SetString(PyExc_TypeError, "outarray is not a C array");
+        return NULL;
+    }
+
+    if (!PyArray_EquivTypes(outarray->descr, descr))
+    {
+        PyErr_SetString(PyExc_TypeError, "outarray needs to have float (double) type");
+        return NULL;
+    }
+
+    double *outarray_data = (double *)PyArray_DATA(outarray);
+    memset(outarray_data, 0, sizeof(double) * array_len);
+
+    for (; chrom != NULL; chrom = chrom->next)
+    {
+        if (clChrom != NULL && !sameString(clChrom, chrom->name))
+            continue;
+        char *chromName = chrom->name;
+        struct lm *lm = lmInit(0);
+        int start = 0, end = chrom->size;
+        if (clStart > 0)
+            start = clStart;
+        if (clEnd > 0)
+            end = clEnd;
+        struct bbiInterval *interval, *intervalList = bigWigIntervalQuery(bwf, chromName, start, end, lm);
+        for (interval = intervalList; interval != NULL; interval = interval->next)
+        {
+            int slice_start = max(interval->start, clStart) - clStart;
+            int slice_stop = min(interval->end, clEnd) - clStart;
+
+            for (double *p = outarray_data + slice_start;
+                 p != outarray_data + slice_stop;
+                 p++)
+            {
+                (*p) += interval->val;
+            }
+        }
+
+        lmCleanup(&lm);
+    }
+    return Py_BuildValue("");
+}
+
 static struct PyMethodDef wWigIOMethods[]=
 {
         {"close",closeWig,1},
         {"open",openWig,1},
         {"getIntervals",getIntervals,1},
+        {"getIntervalData", getIntervalData,1},
         {"getChromSize",getChromSize,1},
         {"wigToBigWig",wigToBigWig,1},
         {"bigWigToWig",bigWigToWig,1},
         {NULL,NULL}
 };
 
+
 void initwWigIO()
 {
         PyObject * m;
             m=Py_InitModule("wWigIO",wWigIOMethods);
+        import_array();
 }
