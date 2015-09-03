@@ -38,7 +38,6 @@ static PyObject *bigWigToWig(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args,"ss", &inFile, &outFile))
         return Py_BuildValue("");
 
-    //
     FILE *f = mustOpen(outFile, "w");
     struct bbiFile *bwf = bigWigFileOpen(inFile);
     struct bbiChromInfo *chrom, *chromList = bbiChromList(bwf);
@@ -116,7 +115,7 @@ static void BigWigFileCleanup( char* inFile)
 }
 
 // close wig file
-static   PyObject *closeWig(PyObject *self,PyObject *args)
+static PyObject *closeWig(PyObject *self,PyObject *args)
 {
     char* inFile;
     if (BigWigList==NULL) // empty node list

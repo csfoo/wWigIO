@@ -2,13 +2,13 @@
 #Last-modified: 09 Apr 2015 01:50:54 PM
 
 #         Module/Scripts Description
-# 
+#
 # Copyright (c) 2008 Yunfei Wang <yfwang0405@gmail.com>
-# 
+#
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the BSD License (see the file COPYING included with
 # the distribution).
-# 
+#
 # @status:  experimental
 # @version: 1.1.0
 # @author:  Yunfei Wang
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     else:
         print >>sys.stderr, "Compile KentLib ..."
         os.system('cd external/KentLib && make && cd ../..')
-    
+
     # install requirement
     install_requires = [ ["numpy >= 1.4.1"],
                          ["pysam >= 0.8.2"]]
