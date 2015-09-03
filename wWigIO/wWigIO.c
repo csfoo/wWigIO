@@ -250,7 +250,7 @@ static PyObject *getIntervals(PyObject *self,PyObject *args)
 }
 
 // Get signal from BigWig file and store in numpy array.
-static PyObject *getIntervalData(PyObject *self, PyObject *args)
+static PyObject *getData(PyObject *self, PyObject *args)
 {
     //Parse the args
     char *clChrom;
@@ -346,7 +346,7 @@ static struct PyMethodDef wWigIOMethods[]=
         {"close",closeWig,1},
         {"open",openWig,1},
         {"getIntervals",getIntervals,1},
-        {"getIntervalData", getIntervalData,1},
+        {"getData", getData,1},
         {"getChromSize",getChromSize,1},
         {"wigToBigWig",wigToBigWig,1},
         {"bigWigToWig",bigWigToWig,1},
