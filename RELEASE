@@ -1,0 +1,20 @@
+1.1.14 update:
+	wBedToFasta.py: when 'stdin' is used, input file format should be specified. 
+	IO.guess: raise error when stdin is used and file type is not specified, or input file has no extension.
+	BedList.merge: fix bugs. Allow merge for adjacent beds.
+	GeneBed.truncate: Allow gene trucation to fit a genomic region.
+
+1.1.13 update:
+	wBedToFasta.py: By default, the program will guess the file format instead of using 'bed' as default.
+	wSamToWig.py:   Allow SAM/BAM format input. Sorting is not necessary.
+	wBamToWig.py:   Replaced by wSamToWig.py
+
+1.1.12 update:
+	BigWigFile can fetch items using generator. This avoids huge memory consumption when fetching the whole chromosome.
+
+1.1.11 update:
+	GeneBed.fetchDB() returns a DNA instead of string object if fetch from Fasta file. To be consisitent with Bed.fetchDB()
+	Fix bugs in Pipeline.ChIP_Project.
+
+1.1.10 update:
+	1. test if issubclass before adding objects with Bed3 or its derived classes.

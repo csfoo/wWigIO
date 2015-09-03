@@ -1,0 +1,5 @@
+include install.sh
+include VERSION
+include RELEASE
+recursive-include external/KentLib *
+recursive-exclude external/KentLib *.o *.so *.a
